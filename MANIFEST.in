@@ -1,0 +1,4 @@
+include install.sh
+include README.md QUICKSTART.md ARCHITECTURE.md
+recursive-include .cursor *
+include .vscode/settings.json

@@ -1,0 +1,2 @@
+[console_scripts]
+runstate = runstate.cli:main

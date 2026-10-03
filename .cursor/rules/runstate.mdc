@@ -1,0 +1,65 @@
+---
+description: runstate repo layout, module boundaries, and engineering conventions
+globs:
+  - "**/*.py"
+  - "**/*.md"
+  - "**/*.toml"
+  - "**/*.sh"
+alwaysApply: true
+---
+
+# runstate: repository rules
+
+## What this is
+
+runstate is a stateful agent orchestration runtime. The unit of work is the
+**run**: budgeted, resumable, receipted. Three builder workspaces assemble
+into one `runstate` package:
+
+- `runtime/` -> `runstate.runtime`: the Run model, Budget/Usage, SQLite
+  ledger, provider router (`get_provider`). Owns ALL state. Depends on
+  nothing product-level.
+- `integrations/` -> `runstate.protocol`: the MCP server
+  (`runstate.protocol.server`) plus sponsor adapters (`zetaris.py`,
+  `meterless.py`). Depends on runtime only.
+- `surface/` -> `runstate.cli`, `runstate.runner`, packaging, docs, tests.
+  Depends on runtime and protocol. Nothing imports the CLI.
+
+The dependency rule is one-directional: surface -> protocol -> runtime.
+Never invert it.
+
+## Conventions
+
+- Public API lives in `runstate.runtime`: `create_run`, `get_run`,
+  `cancel_run`, `list_runs`, `get_provider`, `Budget`, `RunNotFound`,
+  `append_step`, `get_steps`, `check_budget`, `cost_for_usage`. Import from
+  these stable paths; do not reach into private modules.
+- The run id attribute is `run.run_id` (not `run.id`). Statuses: `pending`,
+  `running`, `success`, `unverified`, `exhausted`, `failed`, `cancelled`.
+- Runs have NO `outcome` attribute. Outcomes are ledger steps with
+  `kind="outcome"`; read them via `get_steps(run_id)`.
+- The runner loop (`runstate.runner.drive_run`) is the ONLY executor. The
+  model signals completion with a `FINAL:`-prefixed message. Budgets are
+  checked before every step via `check_budget`; the run is saved after every
+  step so crashes are resumable.
+- Ledger location is `RUNSTATE_DB_PATH` (default `~/.runstate/ledger.db`).
+  Tests MUST isolate it per test (see `tests/conftest.py` pattern).
+- CLI and runner import the runtime LAZILY so `runstate doctor` reports a
+  missing runtime as a checklist failure, never a traceback.
+- `runstate doctor`: missing provider and missing MCP server are `[warn]`,
+  never `[FAIL]`. Only `runstate run` requires a provider.
+- Provider config is env-only: `RUNSTATE_PROVIDER=nebius|openai` plus
+  `NEBIUS_API_KEY`/`OPENAI_API_KEY`. Never fall back to another provider
+  silently; never persist keys.
+
+## Quality bar
+
+No stubs, no TODOs in shipped code. Every doc command must actually run
+(verify before writing). Full suite: `python -m pytest` from `surface/`,
+all green. New behavior must be reachable via the CLI, the MCP server, or
+documented in README/QUICKSTART/ARCHITECTURE.
+
+## Writing
+
+Never use em dashes in any writing. Prefer plain ASCII in docs and CLI
+output.
