@@ -51,6 +51,23 @@ def test_run_start_with_budget_json():
     assert out["budget"]["max_wall_seconds"] == 600.0
 
 
+def test_run_start_with_budget_dict():
+    # MCP server frameworks (mcp>=2.3 pre_parse_json) JSON-decode string
+    # arguments that parse to objects before the tool sees them, so a
+    # client sending budget_json as a JSON string arrives as a dict.
+    # run_start must accept both forms.
+    out = run(server.run_start("x", {"max_steps": 3, "max_cost_usd": 0.5}))
+    assert out["budget"]["max_steps"] == 3
+    assert out["budget"]["max_cost_usd"] == 0.5
+    assert out["budget"]["max_wall_seconds"] == 600.0
+
+
+def test_run_start_with_budget_dict_bad_inputs():
+    assert run(server.run_start("x", {"nope": 1}))["code"] == "bad_request"
+    assert run(server.run_start("x", {"max_steps": -1}))["code"] == "bad_request"
+    assert run(server.run_start("x", [1, 2]))["code"] == "bad_request"
+
+
 def test_run_start_bad_inputs():
     assert run(server.run_start(""))["code"] == "bad_request"
     assert run(server.run_start("   "))["code"] == "bad_request"
