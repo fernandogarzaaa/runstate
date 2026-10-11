@@ -69,13 +69,26 @@ def _budget_dict(run: Run) -> Dict[str, Any]:
     return asdict(run.budget)
 
 
-def _parse_budget(budget_json: Optional[str]) -> Budget:
-    if not budget_json:
+def _parse_budget(budget_json: Optional[str | dict[str, Any]]) -> Budget:
+    """Parse the ``run_start`` budget argument.
+
+    Accepts a JSON string (``'{"max_steps": 3}'``) or an already-parsed
+    dict. The dict form is required because MCP server frameworks
+    (e.g. ``mcp`` 2.x ``pre_parse_json``) JSON-decode string arguments
+    that parse to objects before the tool function ever sees them, so a
+    client sending ``budget_json`` as a JSON string arrives here as a
+    dict. Rejecting the dict form breaks the documented ``run_start``
+    flow for every MCP client.
+    """
+    if budget_json is None or budget_json == "":
         return Budget()
-    try:
-        raw = json.loads(budget_json)
-    except json.JSONDecodeError as exc:
-        raise ValueError(f"budget_json is not valid JSON: {exc}") from exc
+    if isinstance(budget_json, dict):
+        raw = budget_json
+    else:
+        try:
+            raw = json.loads(budget_json)
+        except (json.JSONDecodeError, TypeError) as exc:
+            raise ValueError(f"budget_json is not valid JSON: {exc}") from exc
     if not isinstance(raw, dict):
         raise ValueError("budget_json must be a JSON object")
     allowed = {"max_steps", "max_wall_seconds", "max_cost_usd"}
@@ -102,12 +115,17 @@ def _history_messages(run_id: str) -> List[Dict[str, str]]:
 
 # ------------------------------------------------------------------ tools
 
-async def run_start(objective: str, budget_json: Optional[str] = None) -> Dict[str, Any]:
+async def run_start(objective: str,
+                   budget_json: Optional[str | dict[str, Any]] = None
+                   ) -> Dict[str, Any]:
     """Start a new stateful agent run.
 
     :param objective: the run's goal in one sentence.
-    :param budget_json: optional JSON object with max_steps,
-        max_wall_seconds, max_cost_usd.
+    :param budget_json: optional budget as a JSON string
+        (``'{"max_steps": 10}'``) or an already-parsed JSON object with
+        max_steps, max_wall_seconds, max_cost_usd. Both forms are
+        accepted because MCP frameworks may JSON-decode the string
+        before the tool sees it.
     """
     if not objective or not objective.strip():
         return {"error": "objective is required", "code": "bad_request"}
