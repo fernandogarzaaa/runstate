@@ -80,7 +80,7 @@ def _parse_budget(budget_json: Optional[str | dict[str, Any]]) -> Budget:
     dict. Rejecting the dict form breaks the documented ``run_start``
     flow for every MCP client.
     """
-    if not budget_json:
+    if budget_json is None or budget_json == "":
         return Budget()
     if isinstance(budget_json, dict):
         raw = budget_json

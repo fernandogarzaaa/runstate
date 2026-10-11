@@ -66,6 +66,10 @@ def test_run_start_with_budget_dict_bad_inputs():
     assert run(server.run_start("x", {"nope": 1}))["code"] == "bad_request"
     assert run(server.run_start("x", {"max_steps": -1}))["code"] == "bad_request"
     assert run(server.run_start("x", [1, 2]))["code"] == "bad_request"
+    # falsy non-dict inputs must not silently select the default budget
+    assert run(server.run_start("x", []))["code"] == "bad_request"
+    assert run(server.run_start("x", 0))["code"] == "bad_request"
+    assert run(server.run_start("x", False))["code"] == "bad_request"
 
 
 def test_run_start_bad_inputs():
