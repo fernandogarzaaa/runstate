@@ -145,6 +145,16 @@ def cmd_run(args):
     except ValueError as exc:
         print(f"error: invalid budget: {exc}", file=sys.stderr)
         return 2
+    # Resolve the provider before recording anything: the CLI has no resume
+    # command, so a run created without a usable provider would sit in
+    # ``pending`` forever.
+    try:
+        rt.providers.get_provider(args.provider)
+    except rt.providers.ProviderNotConfigured as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        print("hint: set RUNSTATE_PROVIDER=nebius (needs NEBIUS_API_KEY) or "
+              "RUNSTATE_PROVIDER=openai (needs OPENAI_API_KEY)", file=sys.stderr)
+        return 2
     try:
         run = rt.api.create_run(args.objective, budget=budget)
     except ValueError as exc:
