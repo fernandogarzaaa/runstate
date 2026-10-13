@@ -97,4 +97,14 @@ def test_db_path_env_override(monkeypatch, tmp_path):
     monkeypatch.setenv("RUNSTATE_DB_PATH", str(tmp_path / "custom.db"))
     assert ledger.db_path() == tmp_path / "custom.db"
     monkeypatch.delenv("RUNSTATE_DB_PATH")
+    monkeypatch.delenv("RUNSTATE_HOME", raising=False)
     assert ledger.db_path() == ledger.DEFAULT_DB_PATH
+
+
+def test_db_path_follows_runstate_home(monkeypatch, tmp_path):
+    monkeypatch.delenv("RUNSTATE_DB_PATH")
+    monkeypatch.setenv("RUNSTATE_HOME", str(tmp_path / "home"))
+    assert ledger.db_path() == tmp_path / "home" / "ledger.db"
+    # an explicit RUNSTATE_DB_PATH still wins
+    monkeypatch.setenv("RUNSTATE_DB_PATH", str(tmp_path / "custom.db"))
+    assert ledger.db_path() == tmp_path / "custom.db"
