@@ -48,7 +48,7 @@ The server reads `RUNSTATE_HOST` / `RUNSTATE_PORT` (default
 | Variable | Default | Purpose |
 |---|---|---|
 | `RUNSTATE_HOST` / `RUNSTATE_PORT` | `127.0.0.1` / `8899` | server bind |
-| `RUNSTATE_DB_PATH` | `~/.runstate/ledger.db` | runtime SQLite ledger (Builder 1) |
+| `RUNSTATE_DB_PATH` | `$RUNSTATE_HOME/ledger.db` | runtime SQLite ledger (Builder 1) |
 | `RUNSTATE_PROVIDER` | (unset) | `nebius` or `openai`; required for `run_step` |
 | `NEBIUS_API_KEY` / `OPENAI_API_KEY` | (unset) | provider credentials (never logged) |
 | `RUNSTATE_MODEL` | provider default (Nemotron 3 Nano 30B on Nebius) | model override |

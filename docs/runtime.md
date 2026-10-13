@@ -73,7 +73,7 @@ Unknown models use the documented conservative default
 
 ## Persistence
 
-Database path from `RUNSTATE_DB_PATH`, default `~/.runstate/ledger.db`.
+Database path from `RUNSTATE_DB_PATH`, default `$RUNSTATE_HOME/ledger.db` (`~/.runstate/ledger.db`).
 Two tables: `runs` (one row per run, budget/usage as JSON) and `steps`
 (append-only ledger: `seq`, `kind`, `content`, `tokens`, `cost`).
 
