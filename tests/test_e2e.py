@@ -141,9 +141,12 @@ def test_run_without_provider_fails_clearly(isolated_env, monkeypatch):
         lambda name=None: (_ for _ in ()).throw(
             rt_providers.ProviderNotConfigured("no provider configured")),
     )
-    code, _, err = run_cli("run", "needs a model")
+    code, out, err = run_cli("run", "needs a model")
     assert code == 2
     assert "RUNSTATE_PROVIDER" in err
+    # no orphaned pending run is left behind (the CLI cannot resume it)
+    assert "started run" not in out
+    assert rt_api.list_runs() == []
 
 
 def test_step_budget_exhaustion(isolated_env, monkeypatch):
