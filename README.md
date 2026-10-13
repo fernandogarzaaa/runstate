@@ -168,7 +168,7 @@ the ledger.
 | `NEBIUS_API_KEY` | (unset) | API key for the Nebius provider |
 | `OPENAI_API_KEY` | (unset) | API key for the OpenAI provider |
 | `RUNSTATE_MODEL` | provider default | Override the model id (default: `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` on Nebius, `gpt-4o-mini` on OpenAI) |
-| `RUNSTATE_DB_PATH` | `~/.runstate/ledger.db` | SQLite ledger location |
+| `RUNSTATE_DB_PATH` | `$RUNSTATE_HOME/ledger.db` | SQLite ledger location |
 | `RUNSTATE_HOME` | `~/.runstate` | Writable home directory for runstate state |
 | `RUNSTATE_DEFAULT_MAX_STEPS` | `50` | Default step budget for `runstate run` |
 | `RUNSTATE_DEFAULT_MAX_COST_USD` | `1.00` | Default cost budget (USD) for `runstate run` |

@@ -1,7 +1,8 @@
 """SQLite persistence for runs and their step ledgers.
 
 The database path comes from the ``RUNSTATE_DB_PATH`` environment variable,
-defaulting to ``~/.runstate/ledger.db``. Two tables:
+defaulting to ``$RUNSTATE_HOME/ledger.db`` (``RUNSTATE_HOME`` defaults to
+``~/.runstate``). Two tables:
 
 ``runs``
     One row per run: id, objective, status, budget/usage as JSON, timestamps.
@@ -58,7 +59,12 @@ class RunNotFound(Exception):
 def db_path() -> Path:
     """Resolve the ledger database path from the environment."""
     override = os.environ.get("RUNSTATE_DB_PATH")
-    return Path(override).expanduser() if override else DEFAULT_DB_PATH
+    if override:
+        return Path(override).expanduser()
+    home = os.environ.get("RUNSTATE_HOME")
+    if home:
+        return Path(home).expanduser() / "ledger.db"
+    return DEFAULT_DB_PATH
 
 
 def _connect() -> sqlite3.Connection:
