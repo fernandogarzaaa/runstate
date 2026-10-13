@@ -56,4 +56,4 @@ __all__ = [
     "cost_for_usage",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
